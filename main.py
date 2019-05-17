@@ -9,6 +9,7 @@
 from __future__ import division
 from Tkinter import *
 import tkMessageBox
+import tkFileDialog
 from PIL import Image, ImageTk
 import os
 import sys
@@ -146,7 +147,7 @@ class LabelTool():
     def loadDir(self, dbg = False):
         if not dbg:
             try:
-                s = self.entry.get()
+                s = self.entry.get().strip()
                 self.parent.focus()
                 self.category = s
             except ValueError as ve:
@@ -155,8 +156,13 @@ class LabelTool():
         if not os.path.isdir('./Images/%s' % self.category):
            tkMessageBox.showerror("Error!", message = "The specified dir doesn't exist!")
            return
+
         # get image list
-        self.imageDir = os.path.join(r'./Images', '%s' %(self.category))
+        if self.category:
+            self.imageDir = os.path.join(r'./Images', '%s' %(self.category))
+        else:
+            self.imageDir = tkFileDialog.askdirectory(initialdir = "./", title = "Select an image folder")
+            
         self.imageList = glob.glob(os.path.join(self.imageDir, '*.jpg'))
         if len(self.imageList) == 0:
             print 'No .jpg images found in the specified dir!'
@@ -170,7 +176,11 @@ class LabelTool():
          # set up output dir
         if not os.path.exists('./Labels'):
             os.mkdir('./Labels')
-        self.outDir = os.path.join(r'./Labels', '%s' %(self.category))
+       
+        if self.category:
+            self.outDir = os.path.join(r'./Labels', '%s' %(self.category))
+        else:
+            self.outDir = self.imageDir
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
         self.loadImage()
