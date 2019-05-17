@@ -107,10 +107,12 @@ class LabelTool():
         self.btnDel.grid(row = 4, column = 2, sticky = W+E+N)
         self.btnClear = Button(self.frame, text = 'ClearAll', command = self.clearBBox)
         self.btnClear.grid(row = 5, column = 2, sticky = W+E+N)
+        self.btnProcess = Button(self.frame, text = 'Process', command = self.processTrainTest)
+        self.btnProcess.grid(row = 6, column = 2, sticky = W+E+S)
 
         # control panel for image navigation
         self.ctrPanel = Frame(self.frame)
-        self.ctrPanel.grid(row = 6, column = 1, columnspan = 2, sticky = W+E)
+        self.ctrPanel.grid(row = 7, column = 1, columnspan = 2, sticky = W+E)
         self.prevBtn = Button(self.ctrPanel, text='<< Prev', width = 10, command = self.prevImage)
         self.prevBtn.pack(side = LEFT, padx = 5, pady = 3)
         self.nextBtn = Button(self.ctrPanel, text='Next >>', width = 10, command = self.nextImage)
@@ -185,6 +187,30 @@ class LabelTool():
             os.mkdir(self.outDir)
         self.loadImage()
         print '%d images loaded from %s' %(self.total, s)
+
+    def processTrainTest(self):
+        if not self.imageDir:
+            tkMessageBox.showerror("Error!", message = "No image folder select")
+            return
+
+        # Percentage of images to be used for the test set
+        percentage_test = 10;
+        
+        # Create and/or truncate train.txt and test.txt
+        file_train = open('train.txt', 'w')
+        file_test = open('test.txt', 'w')
+        
+        # Populate train.txt and test.txt
+        counter = 1
+        index_test = round(100 / percentage_test)
+        for pathAndFilename in glob.iglob(os.path.join(self.imageDir, "*.jpg")):
+            print pathAndFilename
+            if counter == index_test:
+                counter = 1
+                file_test.write(pathAndFilename +  "\n")
+            else:
+                file_train.write(pathAndFilename +  "\n")
+                counter = counter + 1
 
     def loadImage(self):
         # load image
@@ -307,6 +333,7 @@ class LabelTool():
             self.saveImage()
             self.cur = idx
             self.loadImage()
+
     def change_dropdown(self,*args):
         cur_cls = self.tkvar.get()
         self.cur_cls_id = classes.index(cur_cls)
@@ -323,6 +350,7 @@ class LabelTool():
         y = y*dh
         h = h*dh
         return (x,y,w,h)
+
     def deconvert(self,annbox):
         ox = float(annbox[0])
         oy = float(annbox[1])
